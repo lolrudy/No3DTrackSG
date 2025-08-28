@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+
+    <title>Street Gaussians without 3D Object Tracker</title>
+
+    <meta name="description" content="Realistic scene reconstruction in driving scenarios poses significant challenges due to fast-moving objects. Most existing methods rely on labor-intensive manual labeling of object poses to reconstruct dynamic objects in canonical space and move them based on these poses during rendering. While some approaches attempt to use 3D object trackers to replace manual annotations, the limited generalization of 3D trackers - caused by the scarcity of large-scale 3D datasets - results in inferior reconstructions in real-world settings. In contrast, 2D foundation models demonstrate strong generalization capabilities. To eliminate the reliance on 3D trackers and enhance robustness across diverse environments, we propose a stable object tracking module by leveraging associations from 2D deep trackers within a 3D object fusion strategy. We address inevitable tracking errors by further introducing a motion learning strategy in an implicit feature space that autonomously corrects trajectory errors and recovers missed detections. Experimental results on Waymo-NOTR and KITTI show that our method outperforms existing approaches.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1296">
+    <meta property="og:image:height" content="840">
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Street Gaussians without 3D Object Tracker" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Street Gaussians without 3D Object Tracker" />
+    <!-- <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;text y=%22.9em%22 font-size=%2290%22&gt;%E2%9C%A8&lt;/text&gt;&lt;/svg&gt;"> -->
+    <!-- <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛐</text></svg>"> -->
+    <link rel="icon" href="./img/bot-driving-car.png">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.8.0/codemirror.min.css">
+    <link rel="stylesheet" href="css/app.css">
+
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.8.0/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.5.3/clipboard.min.js"></script>
+    <script src="js/video_comparison.js"></script>
+    <script src="js/app.js"></script>
+
+    <style>
+        .slick-prev:before,
+        .slick-next:before {
+            color: black;
+
+        }
+
+        /* .container {
+            margin-left: -100px;
+        } */
+        .image-row {
+            display: flex;
+            justify-content: center;
+        }
+
+        .image-wrapper {
+            margin: 0 10px;
+            text-align: center;
+        }
+
+        .caption-row {
+            align-items: flex-end;
+        }
+
+        .caption-row .image-wrapper {
+            margin-bottom: 20px;
+        }
+
+        .caption-row .image-wrapper p {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container" id="main">
+        <div class="row">
+            <h2 class="col-md-12 text-center" style="margin-top:40px;">
+    <b>Street Gaussians without 3D Object Tracker</b>
+    <small>ICCV 2025</small>
+</h2>
+
+        </div>
+        <div class="row">
+    <div class="col-md-12 text-center">
+    <ul class="list-inline" aria-label="Authors" style="font-size:20px;">
+            <li>Ruida Zhang<sup>1,2</sup></li>
+            <li>Chengxi Li<sup>1</sup></li>
+            <li>Chenyangguang Zhang<sup>1</sup></li>
+            <li>Xingyu Liu<sup>1</sup></li>
+            <li>Haili Yuan<sup>1</sup></li>
+            <li>Yanyan Li<sup>2</sup></li>
+            <li>Xiangyang Ji<sup>1</sup></li>
+            <li>Gim Hee Lee<sup>2</sup></li>
+        </ul>
+        <ul class="list-inline" aria-label="Affiliations" style="font-size:20px;">
+            <li>Tsinghua University<sup>1</sup></li>
+            <li>National University of Singapore<sup>2</sup></li>
+        </ul>
+        <div class="text-center" style="margin-bottom:10px;">
+            <img src="img/tsinghua.png" alt="Tsinghua Logo" style="height:70px; margin-right:30px; vertical-align:middle;" />
+            <img src="img/NUS.png" alt="NUS Logo" style="height:70px; vertical-align:middle;" />
+        </div>
+    </div>
+</div>
+
+
+        <div class="row">
+            <div class="col-md-4 col-md-offset-4 text-center">
+                <ul class="nav nav-pills nav-justified" style="margin-top:10px">
+                <li>
+    <a href="https://arxiv.org/abs/2412.05548" target="_blank" rel="noopener">
+        <img src="img/paper_image.png" height="60" alt="Paper">
+        <h4><strong>Paper</strong></h4>
+    </a>
+</li>
+                <!-- <li>
+                    <a href="https://github.com/zju3dv/street_gaussians">
+                    <img src="img/github.png" height="60px">
+                        <h4><strong>Code</strong></h4>
+                    </a>
+                </li> -->
+                </ul>
+            </div>
+        </div>
+
+
+
+<div class="row " style="margin-top:20px">
+            <div class="col-md-8 col-md-offset-2 ">
+                    <img src="img/teaser-streetgs-2column.jpg" width="100%" alt="Teaser" />
+            </div>
+            <div class="col-md-8 col-md-offset-2 ">
+                    <p class="text-center">
+                            Comparison of 3D tracker-based Street Gaussians (left) and our approach (right).
+                            Existing methods heavily rely on object poses, but 3D trackers struggle with limited generalization, leading to flaws in novel view synthesis.
+                            In contrast, 2D foundation models show better generalization.
+                            Our approach leverages a 2D foundation model for object tracking and learns point motion within an implicit feature space to autonomously correct tracking errors, improving robustness across diverse scenes.
+                    </p>
+            </div>
+        </div>
+
+
+        <div class="row ">
+            <div class="col-md-8 col-md-offset-2 ">
+                <h3>
+                    Abstract
+                </h3>
+                <p class="text-justify ">
+                    Realistic scene reconstruction in driving scenarios poses significant challenges due to fast-moving objects. 
+                    Most existing methods rely on labor-intensive manual labeling of object poses to reconstruct dynamic objects in canonical space and move them based on these poses during rendering. 
+                    While some approaches attempt to use 3D object trackers to replace manual annotations, the limited generalization of 3D trackers - caused by the scarcity of large-scale 3D datasets - results in inferior reconstructions in real-world settings.
+                    In contrast, 2D foundation models demonstrate strong generalization capabilities. 
+                    To eliminate the reliance on 3D trackers and enhance robustness across diverse environments, we propose a stable object tracking module by leveraging associations from 2D deep trackers within a 3D object fusion strategy. 
+                    We address inevitable tracking errors by further introducing a motion learning strategy in an implicit feature space that autonomously corrects trajectory errors and recovers missed detections.
+                    Experimental results on Waymo-NOTR and KITTI show that our method outperforms existing approaches.
+                </p>
+            </div>
+        </div>
+
+
+
+        <div class="row ">
+            <div class="col-md-8 col-md-offset-2 ">
+                <h3>
+                    Comparisons
+                </h3>
+                <div class="tabs">
+                </div>
+
+                
+                <div class="image-row">
+                            <div class="image-wrapper" style="width:100%;">
+                                <style>
+                                    .ba-slider {
+                                        position: relative;
+                                        width: 100%;
+                                        max-width: 420px;
+                                        margin: 10px auto 10px auto;
+                                        aspect-ratio: 3/2;
+                                        overflow: hidden;
+                                        box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+                                        background: #f8f8f8;
+                                    }
+                                    .ba-slider img {
+                                        position: absolute;
+                                        top: 0;
+                                        left: 0;
+                                        height: 100%;
+                                        width: 100%;
+                                        object-fit: cover;
+                                        border-radius: 16px;
+                                    }
+                                    .ba-slider .ba-handle {
+                                        position: absolute;
+                                        top: 0;
+                                        left: 50%;
+                                        width: 0;
+                                        height: 100%;
+                                        z-index: 3;
+                                        cursor: ew-resize;
+                                    }
+                                    .ba-slider .ba-handle-arrow {
+                                        position: absolute;
+                                        top: 50%;
+                                        left: 50%;
+                                        transform: translate(-50%, -50%);
+                                        width: 40px;
+                                        height: 40px;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        background: none;
+                                        border: none;
+                                        box-shadow: none;
+                                        padding: 0;
+                                    }
+                                    .ba-slider .ba-handle-line {
+                                        position: absolute;
+                                        top: 0;
+                                        left: 50%;
+                                        transform: translateX(-50%);
+                                        width: 4px;
+                                        height: 100%;
+                                        background: #fff;
+                                        border-left: 2px solid #333;
+                                    }
+                                </style>
+                                <div class="ba-slider-row" style="display: flex; gap: 24px; margin-bottom: 16px;">
+                                    <div class="ba-slider" id="ba-slider-edit">
+                                        <img src="img/sg1.png" alt="Before" style="z-index:1;">
+                                        <img src="img/our1.png" alt="After" id="ba-after-edit" style="clip-path: inset(0 0 0 50%); z-index:2;">
+                                        <div class="ba-handle" id="ba-handle-edit">
+                                            <div class="ba-handle-line"></div>
+                                            <div class="ba-handle-arrow">
+                                                <div style="position: relative; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                                    <svg width="40" height="40" viewBox="0 0 40 40" style="position:absolute;top:0;left:0;z-index:0;" xmlns="http://www.w3.org/2000/svg">
+                                                        <circle cx="20" cy="20" r="16" fill="#fff" fill-opacity="0.5" />
+                                                    </svg>
+                                                    <svg width="40" height="32" viewBox="0 0 40 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:4px;left:0;z-index:1;">
+                                                        <path d="M8 16 L14 10" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                                        <path d="M8 16 L14 22" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                                        <line x1="8" y1="16" x2="32" y2="16" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                                        <path d="M32 16 L26 10" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                                        <path d="M32 16 L26 22" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="ba-slider" id="ba-slider-edit-2">
+                                        <img src="img/sg2.png" alt="Before" style="z-index:1;">
+                                        <img src="img/our2.png" alt="After" id="ba-after-edit-2" style="clip-path: inset(0 0 0 50%); z-index:2;">
+                                        <div class="ba-handle" id="ba-handle-edit-2">
+                                            <div class="ba-handle-line"></div>
+                                            <div class="ba-handle-arrow">
+                                                <div style="position: relative; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                                    <svg width="40" height="40" viewBox="0 0 40 40" style="position:absolute;top:0;left:0;z-index:0;" xmlns="http://www.w3.org/2000/svg">
+                                                        <circle cx="20" cy="20" r="16" fill="#fff" fill-opacity="0.5" />
+                                                    </svg>
+                                                    <svg width="40" height="32" viewBox="0 0 40 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:4px;left:0;z-index:1;">
+                                                        <path d="M8 16 L14 10" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                                        <path d="M8 16 L14 22" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                                        <line x1="8" y1="16" x2="32" y2="16" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                                        <path d="M32 16 L26 10" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                                        <path d="M32 16 L26 22" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="ba-slider-row" style="display: flex; gap: 24px; margin-bottom: 16px;">
+                                    <div class="ba-slider" id="ba-slider-edit-3">
+                                        <img src="img/sg3.png" alt="Before" style="z-index:1;">
+                                        <img src="img/our3.png" alt="After" id="ba-after-edit-3" style="clip-path: inset(0 0 0 50%); z-index:2;">
+                                        <div class="ba-handle" id="ba-handle-edit-3">
+                                            <div class="ba-handle-line"></div>
+                                            <div class="ba-handle-arrow">
+                                                <div style="position: relative; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                                    <svg width="40" height="40" viewBox="0 0 40 40" style="position:absolute;top:0;left:0;z-index:0;" xmlns="http://www.w3.org/2000/svg">
+                                                        <circle cx="20" cy="20" r="16" fill="#fff" fill-opacity="0.5" />
+                                                    </svg>
+                                                    <svg width="40" height="32" viewBox="0 0 40 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:4px;left:0;z-index:1;">
+                                                        <path d="M8 16 L14 10" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                                        <path d="M8 16 L14 22" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                                        <line x1="8" y1="16" x2="32" y2="16" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                                        <path d="M32 16 L26 10" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                                        <path d="M32 16 L26 22" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="ba-slider" id="ba-slider-edit-4">
+                                        <img src="img/sg4.png" alt="Before" style="z-index:1;">
+                                        <img src="img/our4.png" alt="After" id="ba-after-edit-4" style="clip-path: inset(0 0 0 50%); z-index:2;">
+                                        <div class="ba-handle" id="ba-handle-edit-4">
+                                            <div class="ba-handle-line"></div>
+                                            <div class="ba-handle-arrow">
+                                                <div style="position: relative; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                                    <svg width="40" height="40" viewBox="0 0 40 40" style="position:absolute;top:0;left:0;z-index:0;" xmlns="http://www.w3.org/2000/svg">
+                                                        <circle cx="20" cy="20" r="16" fill="#fff" fill-opacity="0.5" />
+                                                    </svg>
+                                                    <svg width="40" height="32" viewBox="0 0 40 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:4px;left:0;z-index:1;">
+                                                        <path d="M8 16 L14 10" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                                        <path d="M8 16 L14 22" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                                        <line x1="8" y1="16" x2="32" y2="16" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                                        <path d="M32 16 L26 10" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                                        <path d="M32 16 L26 22" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <script>
+                                (function() {
+                                    const baSlider = document.getElementById('ba-slider-edit');
+                                    const baAfter = document.getElementById('ba-after-edit');
+                                    const baHandle = document.getElementById('ba-handle-edit');
+                                    function setSlider(percent) {
+                                        baAfter.style.clipPath = `inset(0 0 0 ${percent}%)`;
+                                        baHandle.style.left = percent + '%';
+                                    }
+                                    setSlider(50);
+                                    baSlider.onmousemove = function(e) {
+                                        const rect = baSlider.getBoundingClientRect();
+                                        let x = e.clientX - rect.left;
+                                        x = Math.max(0, Math.min(x, rect.width));
+                                        const percent = (x / rect.width) * 100;
+                                        setSlider(percent);
+                                    };
+                                    // Touch support
+                                    baSlider.ontouchmove = function(e) {
+                                        const rect = baSlider.getBoundingClientRect();
+                                        let x = e.touches[0].clientX - rect.left;
+                                        x = Math.max(0, Math.min(x, rect.width));
+                                        const percent = (x / rect.width) * 100;
+                                        setSlider(percent);
+                                    };
+                                })();
+                                    function setupBASlider(id) {
+                                        const baSlider = document.getElementById('ba-slider-edit' + (id === 1 ? '' : '-' + id));
+                                        const baAfter = document.getElementById('ba-after-edit' + (id === 1 ? '' : '-' + id));
+                                        const baHandle = document.getElementById('ba-handle-edit' + (id === 1 ? '' : '-' + id));
+                                        function setSlider(percent) {
+                                            baAfter.style.clipPath = `inset(0 0 0 ${percent}%)`;
+                                            baHandle.style.left = percent + '%';
+                                        }
+                                        setSlider(50);
+                                        baSlider.onmousemove = function(e) {
+                                            const rect = baSlider.getBoundingClientRect();
+                                            let x = e.clientX - rect.left;
+                                            x = Math.max(0, Math.min(x, rect.width));
+                                            const percent = (x / rect.width) * 100;
+                                            setSlider(percent);
+                                        };
+                                        baSlider.ontouchmove = function(e) {
+                                            const rect = baSlider.getBoundingClientRect();
+                                            let x = e.touches[0].clientX - rect.left;
+                                            x = Math.max(0, Math.min(x, rect.width));
+                                            const percent = (x / rect.width) * 100;
+                                            setSlider(percent);
+                                        };
+                                    }
+                                    [1,2,3,4].forEach(setupBASlider);
+                                </script>
+                            </div>
+
+                        
+                </div>
+
+        <div class="row" style="margin-top:20px">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="embed-responsive embed-responsive-16by9">
+                    <iframe class="embed-responsive-item"
+                            src="https://www.youtube.com/embed/0IFzajuDrqQ"
+                            title="Overview video"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+
+        <div class="image-row">
+                    <div class="image-wrapper">
+                        <img src="img/vis-streetgs.jpg" alt="Street Gaussians Comparison" style="width:100%; margin-bottom:20px;" />
+                    </div>
+                </div>
+                <!-- <div class="video-compare-container" id="seq25_compare_videoDiv" style="display: none;">
+                    <video class="video" id="seq25_compare_video" loop playsinline autoPlay muted
+                        src="https://yunzhiy.github.io/project_page_assets/street_gaussians/comparsion/seq_25_combine.mp4" onplay="resizeAndPlay(this)">
+                    </video>
+                    <canvas height=0 class="videoMerge" id="seq25_compare_videoMerge"></canvas>
+                </div>
+                <div class="video-compare-container" id="seq06_compare_videoDiv" style="display: none;">
+                    <video class="video" id="seq06_compare_video" loop playsinline autoPlay muted
+                        src="https://yunzhiy.github.io/project_page_assets/street_gaussians/comparsion/seq_06_combine.mp4" onplay="resizeAndPlay(this)">
+                    </video>
+                    <canvas height=0 class="videoMerge" id="seq06_compare_videoMerge"></canvas>
+                </div>
+                <div class="video-compare-container" id="seq25_compare_imageDiv" style="display: inline;">
+                    <video class="video" id="seq25_compare_image" loop playsinline autoPlay muted
+                        src="https://yunzhiy.github.io/project_page_assets/street_gaussians/comparsion/seq_25_combine_single.mp4" onplay="resizeAndPlay(this)">
+                    </video>
+                    <canvas height=0 class="videoMerge" id="seq25_compare_imageMerge"></canvas>
+                </div>
+                <div class="video-compare-container" id="seq06_compare_imageDiv" style="display: inline;">
+                    <video class="video" id="seq06_compare_image" loop playsinline autoPlay muted
+                        src="https://yunzhiy.github.io/project_page_assets/street_gaussians/comparsion/seq_06_combine_single.mp4" onplay="resizeAndPlay(this)">
+                    </video>
+                    <canvas height=0 class="videoMerge" id="seq06_compare_imageMerge"></canvas>
+                </div> -->
+            </div>
+        </div>
+
+
+
+        <!-- <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h3>
+                    Rendering results
+                </h3>
+                <div class="text-center">
+                    <div style="position:relative;">
+                        <div class="image-row">
+                            <div class="image-wrapper">
+                                <video width="100%" loop muted autoplay>
+                                    <source src="https://raw.githubusercontent.com/yunzhiy/project_page_assets/main/street_gaussians/waymo/train_031.mp4" type="video/mp4" />
+                                </video>
+                            </div>
+                        </div>
+
+                        <div class="image-row">
+                            <div class="image-wrapper">
+                                <video width="100%" loop muted autoplay>
+                                    <source src="https://raw.githubusercontent.com/yunzhiy/project_page_assets/main/street_gaussians/waymo/train_333.mp4" type="video/mp4" />
+                                </video>
+                            </div>
+                        </div>
+                        <div class="image-row">
+                            <div class="image-wrapper">
+                                <video width="100%" loop muted autoplay>
+                                    <source src="https://raw.githubusercontent.com/yunzhiy/project_page_assets/main/street_gaussians/waymo/seq_04.mp4" type="video/mp4" />
+                                </video>
+                            </div>
+
+                            <div class="image-wrapper">
+                                <video width="100%" loop muted autoplay>
+                                    <source src="https://raw.githubusercontent.com/yunzhiy/project_page_assets/main/street_gaussians/waymo/seq_05.mp4" type="video/mp4" />
+                                </video>
+                            </div>
+                        </div>
+                        <div class="image-row">
+                            <div class="image-wrapper">
+                                <video width="100%" loop muted autoplay>
+                                    <source src="https://raw.githubusercontent.com/yunzhiy/project_page_assets/main/street_gaussians/waymo/seq_10.mp4" type="video/mp4" />
+                                </video>
+                            </div>
+
+                            <div class="image-wrapper">
+                                <video width="100%" loop muted autoplay>
+                                    <source src="https://raw.githubusercontent.com/yunzhiy/project_page_assets/main/street_gaussians/waymo/seq_17.mp4" type="video/mp4" />
+                                </video>
+                            </div>
+                        </div>                        <div class="image-row">
+                            <div class="image-wrapper">
+                                <video width="100%" loop muted autoplay>
+                                    <source src="https://raw.githubusercontent.com/yunzhiy/project_page_assets/main/street_gaussians/waymo/seq_32.mp4" type="video/mp4" />
+                                </video>
+                            </div>
+
+                            <div class="image-wrapper">
+                                <video width="100%" loop muted autoplay>
+                                    <source src="https://raw.githubusercontent.com/yunzhiy/project_page_assets/main/street_gaussians/waymo/seq_33.mp4" type="video/mp4" />
+                                </video>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div> -->
+
+
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h3>
+                    Editing Results
+                </h3>
+                <div class="text-center" style="margin-bottom:20px;">
+                    <button class="btn btn-primary edit-btn" data-type="move" style="margin-right:10px;">Move</button>
+                    <button class="btn btn-primary edit-btn" data-type="remove" style="margin-right:10px;">Remove</button>
+                    <button class="btn btn-primary edit-btn" data-type="substitute">Substitute</button>
+                </div>
+                <div class="ba-slider-row" style="display: flex; gap: 24px; margin-bottom: 16px; justify-content:center;">
+                    <div class="ba-slider" id="ba-slider-editing-1">
+                        <img src="img/move1.png" alt="Edit Result 1" id="edit-result-img-1" style="z-index:1;">
+                        <img src="img/gt1.png" alt="Ground Truth 1" id="edit-gt-img-1" style="clip-path: inset(0 0 0 50%); z-index:2;">
+                        <div class="ba-handle" id="ba-handle-editing-1">
+                            <div class="ba-handle-line"></div>
+                            <div class="ba-handle-arrow">
+                                <div style="position: relative; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                    <svg width="40" height="40" viewBox="0 0 40 40" style="position:absolute;top:0;left:0;z-index:0;" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="20" cy="20" r="16" fill="#fff" fill-opacity="0.5" />
+                                    </svg>
+                                    <svg width="40" height="32" viewBox="0 0 40 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:4px;left:0;z-index:1;">
+                                        <path d="M8 16 L14 10" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                        <path d="M8 16 L14 22" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                        <line x1="8" y1="16" x2="32" y2="16" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                        <path d="M32 16 L26 10" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                        <path d="M32 16 L26 22" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- <div class="ba-slider" id="ba-slider-editing-2">
+                        <img src="img/move2.png" alt="Edit Result 2" id="edit-result-img-2" style="z-index:1;">
+                        <img src="img/gt2.png" alt="Ground Truth 2" id="edit-gt-img-2" style="clip-path: inset(0 0 0 50%); z-index:2;">
+                        <div class="ba-handle" id="ba-handle-editing-2">
+                            <div class="ba-handle-line"></div>
+                            <div class="ba-handle-arrow">
+                                <div style="position: relative; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                    <svg width="40" height="40" viewBox="0 0 40 40" style="position:absolute;top:0;left:0;z-index:0;" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="20" cy="20" r="16" fill="#fff" fill-opacity="0.5" />
+                                    </svg>
+                                    <svg width="40" height="32" viewBox="0 0 40 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:4px;left:0;z-index:1;">
+                                        <path d="M8 16 L14 10" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                        <path d="M8 16 L14 22" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                        <line x1="8" y1="16" x2="32" y2="16" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                        <path d="M32 16 L26 10" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                        <path d="M32 16 L26 22" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+                </div>
+                <script>
+                function setupBASliderCustom(id) {
+                    const baSlider = document.getElementById(id);
+                    if (!baSlider) return;
+                    const baAfter = baSlider.querySelector('img[style*="clip-path"]');
+                    const baHandle = baSlider.querySelector('.ba-handle');
+                    function setSlider(percent) {
+                        baAfter.style.clipPath = `inset(0 0 0 ${percent}%)`;
+                        baHandle.style.left = percent + '%';
+                    }
+                    setSlider(50);
+                    baSlider.onmousemove = function(e) {
+                        const rect = baSlider.getBoundingClientRect();
+                        let x = e.clientX - rect.left;
+                        x = Math.max(0, Math.min(x, rect.width));
+                        const percent = (x / rect.width) * 100;
+                        setSlider(percent);
+                    };
+                    baSlider.ontouchmove = function(e) {
+                        const rect = baSlider.getBoundingClientRect();
+                        let x = e.touches[0].clientX - rect.left;
+                        x = Math.max(0, Math.min(x, rect.width));
+                        const percent = (x / rect.width) * 100;
+                        setSlider(percent);
+                    };
+                }
+                ['ba-slider-editing-1','ba-slider-editing-2'].forEach(setupBASliderCustom);
+                // Button logic
+                const editBtns = document.querySelectorAll('.edit-btn');
+                const resultImg1 = document.getElementById('edit-result-img-1');
+                const gtImg1 = document.getElementById('edit-gt-img-1');
+                const resultImg2 = document.getElementById('edit-result-img-2');
+                const gtImg2 = document.getElementById('edit-gt-img-2');
+                editBtns.forEach(btn => {
+                    btn.onclick = function() {
+                        editBtns.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        const type = btn.getAttribute('data-type');
+                        if(type === 'move') {
+                            resultImg1.src = 'img/move1.png';
+                            gtImg1.src = 'img/gt1.png';
+                            resultImg2.src = 'img/move2.png';
+                            gtImg2.src = 'img/gt2.png';
+                        } else if(type === 'remove') {
+                            resultImg1.src = 'img/remove1.png';
+                            gtImg1.src = 'img/gt1.png';
+                            resultImg2.src = 'img/remove2.png';
+                            gtImg2.src = 'img/gt2.png';
+                        } else if(type === 'substitute') {
+                            resultImg1.src = 'img/substitute1.png';
+                            gtImg1.src = 'img/gt1.png';
+                            resultImg2.src = 'img/substitute2.png';
+                            gtImg2.src = 'img/gt2.png';
+                        }
+                    }
+                });
+                // 默认激活第一个按钮
+                editBtns[0].classList.add('active');
+                </script>
+                
+            </div>
+        </div>
+
+
+
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h3>
+                    Citation
+                </h3>
+                <div class="form-group col-md-10 col-md-offset-1">
+                    <textarea id="bibtex" class="form-control" readonly>@inproceedings{zhang2025streetgaussians,
+    title   = {Street Gaussians without 3D Object Tracker},
+    author  = {Ruida Zhang and Chengxi Li and Chenyangguang Zhang and Xingyu Liu and Haili Yuan and Yanyan Li and Xiangyang Ji and Gim Hee Lee},
+    booktitle = {Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV)},
+    year    = {2025},
+    note    = {arXiv:2412.05548},
+    url     = {https://arxiv.org/abs/2412.05548}
+}</textarea>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</body>
+
+</html>
