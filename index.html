@@ -67,6 +67,59 @@
         .caption-row .image-wrapper p {
             margin-top: 10px;
         }
+        .ba-slider {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 10px auto 10px auto;
+            aspect-ratio: 3/2;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+            background: #f8f8f8;
+        }
+        .ba-slider img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            object-fit: cover;
+            border-radius: 16px;
+        }
+        .ba-slider .ba-handle {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 0;
+            height: 100%;
+            z-index: 3;
+            cursor: ew-resize;
+        }
+        .ba-slider .ba-handle-arrow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            box-shadow: none;
+            padding: 0;
+        }
+        .ba-slider .ba-handle-line {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 100%;
+            background: #fff;
+            border-left: 2px solid #333;
+        }
     </style>
 </head>
 
@@ -112,12 +165,12 @@
         <h4><strong>Paper</strong></h4>
     </a>
 </li>
-                <!-- <li>
+                <li>
                     <a href="https://github.com/zju3dv/street_gaussians">
                     <img src="img/github.png" height="60px">
-                        <h4><strong>Code</strong></h4>
+                        <h4><strong>Code <br>(coming in 2025)</strong></h4>
                     </a>
-                </li> -->
+                </li>
                 </ul>
             </div>
         </div>
@@ -173,7 +226,7 @@
                                     .ba-slider {
                                         position: relative;
                                         width: 100%;
-                                        max-width: 420px;
+                                        max-width: 600px;
                                         margin: 10px auto 10px auto;
                                         aspect-ratio: 3/2;
                                         overflow: hidden;
@@ -369,126 +422,26 @@
                         
                 </div>
 
-        <div class="row" style="margin-top:20px">
-            <div class="col-md-8 col-md-offset-2">
-                <div class="embed-responsive embed-responsive-16by9">
-                    <iframe class="embed-responsive-item"
-                            src="https://www.youtube.com/embed/0IFzajuDrqQ"
-                            title="Overview video"
-                            frameborder="0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                            allowfullscreen></iframe>
+        <div style="margin-bottom:40px;">
+                    <video src="video/nvs.mp4" controls autoplay loop muted style="width:100%;height:auto;display:block;"></video>
                 </div>
-            </div>
-        </div>
 
         <div class="image-row">
-                    <div class="image-wrapper">
-                        <img src="img/vis-streetgs.jpg" alt="Street Gaussians Comparison" style="width:100%; margin-bottom:20px;" />
-                    </div>
-                </div>
-                <!-- <div class="video-compare-container" id="seq25_compare_videoDiv" style="display: none;">
-                    <video class="video" id="seq25_compare_video" loop playsinline autoPlay muted
-                        src="https://yunzhiy.github.io/project_page_assets/street_gaussians/comparsion/seq_25_combine.mp4" onplay="resizeAndPlay(this)">
-                    </video>
-                    <canvas height=0 class="videoMerge" id="seq25_compare_videoMerge"></canvas>
-                </div>
-                <div class="video-compare-container" id="seq06_compare_videoDiv" style="display: none;">
-                    <video class="video" id="seq06_compare_video" loop playsinline autoPlay muted
-                        src="https://yunzhiy.github.io/project_page_assets/street_gaussians/comparsion/seq_06_combine.mp4" onplay="resizeAndPlay(this)">
-                    </video>
-                    <canvas height=0 class="videoMerge" id="seq06_compare_videoMerge"></canvas>
-                </div>
-                <div class="video-compare-container" id="seq25_compare_imageDiv" style="display: inline;">
-                    <video class="video" id="seq25_compare_image" loop playsinline autoPlay muted
-                        src="https://yunzhiy.github.io/project_page_assets/street_gaussians/comparsion/seq_25_combine_single.mp4" onplay="resizeAndPlay(this)">
-                    </video>
-                    <canvas height=0 class="videoMerge" id="seq25_compare_imageMerge"></canvas>
-                </div>
-                <div class="video-compare-container" id="seq06_compare_imageDiv" style="display: inline;">
-                    <video class="video" id="seq06_compare_image" loop playsinline autoPlay muted
-                        src="https://yunzhiy.github.io/project_page_assets/street_gaussians/comparsion/seq_06_combine_single.mp4" onplay="resizeAndPlay(this)">
-                    </video>
-                    <canvas height=0 class="videoMerge" id="seq06_compare_imageMerge"></canvas>
-                </div> -->
+            <div class="image-wrapper">
+                <img src="img/vis-streetgs.jpg" alt="Street Gaussians Comparison" style="width:90%; margin-bottom:20px;" />
             </div>
         </div>
+        <h3 style="margin-top:32px;">Rendering Results</h3>
+        <div style="margin-bottom:40px;">
+            <video src="video/recon.mp4" controls autoplay loop muted style="width:100%;height:auto;display:block;"></video>
+        </div>
 
-
-
-        <!-- <div class="row">
-            <div class="col-md-8 col-md-offset-2">
-                <h3>
-                    Rendering results
-                </h3>
-                <div class="text-center">
-                    <div style="position:relative;">
-                        <div class="image-row">
-                            <div class="image-wrapper">
-                                <video width="100%" loop muted autoplay>
-                                    <source src="https://raw.githubusercontent.com/yunzhiy/project_page_assets/main/street_gaussians/waymo/train_031.mp4" type="video/mp4" />
-                                </video>
-                            </div>
-                        </div>
-
-                        <div class="image-row">
-                            <div class="image-wrapper">
-                                <video width="100%" loop muted autoplay>
-                                    <source src="https://raw.githubusercontent.com/yunzhiy/project_page_assets/main/street_gaussians/waymo/train_333.mp4" type="video/mp4" />
-                                </video>
-                            </div>
-                        </div>
-                        <div class="image-row">
-                            <div class="image-wrapper">
-                                <video width="100%" loop muted autoplay>
-                                    <source src="https://raw.githubusercontent.com/yunzhiy/project_page_assets/main/street_gaussians/waymo/seq_04.mp4" type="video/mp4" />
-                                </video>
-                            </div>
-
-                            <div class="image-wrapper">
-                                <video width="100%" loop muted autoplay>
-                                    <source src="https://raw.githubusercontent.com/yunzhiy/project_page_assets/main/street_gaussians/waymo/seq_05.mp4" type="video/mp4" />
-                                </video>
-                            </div>
-                        </div>
-                        <div class="image-row">
-                            <div class="image-wrapper">
-                                <video width="100%" loop muted autoplay>
-                                    <source src="https://raw.githubusercontent.com/yunzhiy/project_page_assets/main/street_gaussians/waymo/seq_10.mp4" type="video/mp4" />
-                                </video>
-                            </div>
-
-                            <div class="image-wrapper">
-                                <video width="100%" loop muted autoplay>
-                                    <source src="https://raw.githubusercontent.com/yunzhiy/project_page_assets/main/street_gaussians/waymo/seq_17.mp4" type="video/mp4" />
-                                </video>
-                            </div>
-                        </div>                        <div class="image-row">
-                            <div class="image-wrapper">
-                                <video width="100%" loop muted autoplay>
-                                    <source src="https://raw.githubusercontent.com/yunzhiy/project_page_assets/main/street_gaussians/waymo/seq_32.mp4" type="video/mp4" />
-                                </video>
-                            </div>
-
-                            <div class="image-wrapper">
-                                <video width="100%" loop muted autoplay>
-                                    <source src="https://raw.githubusercontent.com/yunzhiy/project_page_assets/main/street_gaussians/waymo/seq_33.mp4" type="video/mp4" />
-                                </video>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-        </div> -->
-
-
-
+        <h3 style="margin-top:32px;">
+                    Editing Results
+        </h3>
         <div class="row">
             <div class="col-md-8 col-md-offset-2">
-                <h3>
-                    Editing Results
-                </h3>
+                
                 <div class="text-center" style="margin-bottom:20px;">
                     <button class="btn btn-primary edit-btn" data-type="move" style="margin-right:10px;">Move</button>
                     <button class="btn btn-primary edit-btn" data-type="remove" style="margin-right:10px;">Remove</button>
