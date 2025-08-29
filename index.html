@@ -120,6 +120,16 @@
             background: #fff;
             border-left: 2px solid #333;
         }
+        .edit-btn {
+            background-color: #bfc8d7 !important;
+            color: #222 !important;
+            border: none;
+            border-radius: 8px !important;
+            font-weight: bold !important;
+        }
+        h3, h2, h4, h5, h6 {
+            font-weight: bold !important;
+        }
     </style>
 </head>
 
@@ -148,9 +158,13 @@
             <li>Tsinghua University<sup>1</sup></li>
             <li>National University of Singapore<sup>2</sup></li>
         </ul>
+        <ul class="list-inline" aria-label="Affiliations" style="font-size:20px;">
+            <li><img src="img/tsinghua.png" alt="Tsinghua Logo" style="height:70px; margin:20px; vertical-align:middle;" /></li>
+            <li><img src="img/NUS.png" alt="NUS Logo" style="height:70px; margin:20px; vertical-align:middle;" /></li>
+        </ul>
         <div class="text-center" style="margin-bottom:10px;">
-            <img src="img/tsinghua.png" alt="Tsinghua Logo" style="height:70px;  margin-right:160px; vertical-align:middle;" />
-            <img src="img/NUS.png" alt="NUS Logo" style="height:70px; margin-right:20px; vertical-align:middle;" />
+            
+            
         </div>
     </div>
 </div>
@@ -160,11 +174,11 @@
             <div class="col-md-4 col-md-offset-4 text-center">
                 <ul class="nav nav-pills nav-justified" style="margin-top:10px">
                 <li>
-    <a href="https://arxiv.org/abs/2412.05548" target="_blank" rel="noopener">
-        <img src="img/paper_image.png" height="60" alt="Paper">
-        <h4><strong>Paper</strong></h4>
-    </a>
-</li>
+                    <a href="https://arxiv.org/abs/2412.05548" target="_blank" rel="noopener">
+                        <img src="img/paper_image.png" height="60" alt="Paper">
+                        <h4><strong>Paper</strong></h4>
+                    </a>
+                </li>
                 <li>
                     <a href="https://github.com/zju3dv/street_gaussians">
                     <img src="img/github.png" height="60px">
@@ -563,13 +577,12 @@
 
 
 
-        <div class="row">
-            <div class="col-md-8 col-md-offset-2">
-                <h3>
-                    Citation
-                </h3>
-                <div class="form-group col-md-10 col-md-offset-1">
-                    <textarea id="bibtex" class="form-control" readonly>@inproceedings{zhang2025streetgaussians,
+        <div class="row" style="padding: 32px 0; margin-bottom: 32px;">
+            <h3>
+                Citation
+            </h3>
+            <div class="form-group col-md-10 col-md-offset-1">
+                <textarea id="bibtex" class="form-control" readonly>@inproceedings{zhang2025street,
     title   = {Street Gaussians without 3D Object Tracker},
     author  = {Ruida Zhang and Chengxi Li and Chenyangguang Zhang and Xingyu Liu and Haili Yuan and Yanyan Li and Xiangyang Ji and Gim Hee Lee},
     booktitle = {Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV)},
@@ -577,7 +590,6 @@
     note    = {arXiv:2412.05548},
     url     = {https://arxiv.org/abs/2412.05548}
 }</textarea>
-                </div>
             </div>
         </div>
 
